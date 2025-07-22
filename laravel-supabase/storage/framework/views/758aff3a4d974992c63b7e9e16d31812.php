@@ -18,12 +18,10 @@
         <div class="container mx-auto flex justify-between items-center">
             <a href="<?php echo e(route('supervisor.dashboard')); ?>" class="text-xl font-bold">Supervisor Dashboard</a>
             <div class="space-x-4 flex items-center">
-                
                 <a href="<?php echo e(route('supervisor.dashboard')); ?>" class="hover:text-gray-300">Dashboard</a>
                 <a href="<?php echo e(route('supervisor.task.log')); ?>" class="hover:text-gray-300">Log Tugas</a>
-                <a href="#" class="hover:text-gray-300">Pekerja</a>
+                <a href="<?php echo e(route('supervisor.pekerja.list')); ?>" class="hover:text-gray-300">Pekerja</a> 
 
-                
                 <form method="POST" action="<?php echo e(route('logout')); ?>" class="inline-block">
                     <?php echo csrf_field(); ?>
                     <button type="submit" class="hover:text-gray-300 cursor-pointer bg-transparent border-none text-white font-bold p-0">
@@ -41,17 +39,13 @@
         <aside class="w-64 bg-white shadow-md rounded-lg p-6 ml-6 flex flex-col justify-between">
             <div>
                 <div class="mb-4 text-center">
-                    
                     <div class="w-24 h-24 mx-auto rounded-full bg-gray-200 flex items-center justify-center mb-2">
                         <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
                     </div>
-                    
                     <h2 class="text-xl font-semibold text-gray-800"><?php echo e(Auth::user()->name ?? 'Supervisor'); ?></h2>
                     <p class="text-gray-600 text-sm"><?php echo e(Auth::user()->email ?? 'email@example.com'); ?></p>
                 </div>
-                
                 <nav class="space-y-2">
-                    
                     
                 </nav>
             </div>
@@ -232,7 +226,7 @@ unset($__errorArgs, $__bag); ?>
                                     <td class="py-4 px-6"><?php echo e($pekerja->alamat); ?></td>
                                     <td class="py-4 px-6">
                                         
-                                        <a href="<?php echo e(route('supervisor.task.log', ['pekerja_id' => $pekerja->id_pekerja])); ?>" class="font-medium text-blue-600 hover:underline">Lihat Tugas</a>
+                                        <a href="<?php echo e(route('supervisor.pekerja.detail', ['id_pekerja' => $pekerja->id_pekerja])); ?>" class="font-medium text-blue-600 hover:underline">Lihat Tugas</a>
                                         
                                     </td>
                                 </tr>
@@ -259,8 +253,8 @@ unset($__errorArgs, $__bag); ?>
                                     $status = $latestSubmission ? $latestSubmission->status : 'to do'; 
                                     
                                     $statusClass = '';
-                                    switch ($status) {
-                                        case 'completed': $statusClass = 'bg-green-100 text-green-800'; break;
+                                    switch (strtolower($status)) {
+                                        case 'done': $statusClass = 'bg-green-100 text-green-800'; break;
                                         case 'to do': $statusClass = 'bg-gray-200 text-gray-700'; break; // 'To Do'
                                         case 'doing': $statusClass = 'bg-yellow-100 text-yellow-800'; break; // 'Doing'
                                         case 'pending': $statusClass = 'bg-orange-100 text-orange-800'; break; // 'Pending' (submission received, waiting approval)
@@ -279,9 +273,9 @@ unset($__errorArgs, $__bag); ?>
                                 <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                 Tenggat: <?php echo e($task->tenggat_task->format('d M Y')); ?>
 
-                                <?php if($task->tenggat_task->isPast() && $status !== 'completed'): ?>
+                                <?php if($task->tenggat_task->isPast() && strtolower($status) !== 'done'): ?> 
                                     <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                        KADALUARSA
+                                        MISSING
                                     </span>
                                 <?php endif; ?>
                             </p>

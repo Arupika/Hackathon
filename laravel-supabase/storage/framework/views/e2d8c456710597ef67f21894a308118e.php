@@ -18,7 +18,8 @@
             <div class="space-x-4 flex items-center">
                 <a href="<?php echo e(route('supervisor.dashboard')); ?>" class="hover:text-gray-300">Dashboard</a>
                 <a href="<?php echo e(route('supervisor.task.log')); ?>" class="hover:text-gray-300">Log Tugas</a>
-                <a href="#" class="hover:text-gray-300">Pekerja</a>
+                
+                <a href="<?php echo e(route('supervisor.pekerja.list')); ?>" class="hover:text-gray-300">Pekerja</a>
 
                 <form method="POST" action="<?php echo e(route('logout')); ?>" class="inline-block">
                     <?php echo csrf_field(); ?>
@@ -53,24 +54,8 @@
         <main class="flex-1 p-6">
             <div class="container mx-auto p-6 bg-white rounded-lg shadow-xl">
                 <h1 class="text-3xl font-bold text-gray-800 mb-6">
-                    Log Tugas
-                    <?php if(isset($pekerja_id) && $pekerja_id): ?>
-                        untuk Pekerja: <?php echo e($tasks->first()->pekerja->nama_pekerja ?? $pekerja_id); ?>
-
-                    <?php elseif(isset($task_id) && $task_id): ?>
-                        (Detail Tugas: <?php echo e(Str::limit($task_id, 8, '')); ?>...)
-                    <?php endif; ?>
+                    Log Tugas <?php if(isset($currentFilterText) && ($pekerjaId || $taskId || strtolower($statusFilter) !== 'pending')): ?> - <?php echo e($currentFilterText); ?> <?php endif; ?>
                 </h1>
-
-                
-                <?php if((isset($pekerja_id) && $pekerja_id) || (isset($task_id) && $task_id)): ?>
-                    <div class="mb-4">
-                        <a href="<?php echo e(route('supervisor.task.log')); ?>" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-block">
-                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            Hapus Filter
-                        </a>
-                    </div>
-                <?php endif; ?>
 
                 
                 <?php if(session('success')): ?>
@@ -85,6 +70,36 @@
                         <span class="block sm:inline"><?php echo e(session('error')); ?></span>
                     </div>
                 <?php endif; ?>
+
+                
+                <div class="flex space-x-2 mb-6">
+                    
+                    <a href="<?php echo e(route('supervisor.task.log', array_merge(request()->except('page', 'status', 'task_id'), ['status' => 'pending']))); ?>"
+                       class="px-4 py-2 rounded-md font-semibold text-sm transition duration-150 ease-in-out
+                       <?php echo e(strtolower($statusFilter) === 'pending' && !$taskId ? 'bg-orange-600 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200'); ?>">
+                        Pending
+                    </a>
+                    
+                    <a href="<?php echo e(route('supervisor.task.log', array_merge(request()->except('page', 'status', 'task_id'), ['status' => 'Done']))); ?>"
+                       class="px-4 py-2 rounded-md font-semibold text-sm transition duration-150 ease-in-out
+                       <?php echo e(strtolower($statusFilter) === 'done' && !$taskId ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200'); ?>">
+                        Done
+                    </a>
+                    
+                    <a href="<?php echo e(route('supervisor.task.log', array_merge(request()->except('page', 'status', 'task_id'), ['status' => 'doing']))); ?>"
+                       class="px-4 py-2 rounded-md font-semibold text-sm transition duration-150 ease-in-out
+                       <?php echo e(strtolower($statusFilter) === 'doing' && !$taskId ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'); ?>">
+                        Doing
+                    </a>
+                    
+                    <?php if($pekerjaId || $taskId || strtolower($statusFilter) !== 'pending'): ?>
+                        <a href="<?php echo e(route('supervisor.task.log')); ?>" class="ml-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-flex items-center">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            Hapus Filter
+                        </a>
+                    <?php endif; ?>
+                </div>
+
 
                 <div class="overflow-x-auto relative shadow-md sm:rounded-lg mb-8">
                     <table class="w-full text-sm text-left text-gray-500">
@@ -113,13 +128,11 @@
                                             $status = $latestSubmission ? $latestSubmission->status : 'to do';
 
                                             $statusClass = '';
-                                            switch ($status) {
-                                                case 'completed': $statusClass = 'bg-green-100 text-green-800'; break;
+                                            switch (strtolower($status)) {
+                                                case 'done': $statusClass = 'bg-green-100 text-green-800'; break;
                                                 case 'to do': $statusClass = 'bg-gray-200 text-gray-700'; break;
                                                 case 'doing': $statusClass = 'bg-yellow-100 text-yellow-800'; break;
                                                 case 'pending': $statusClass = 'bg-orange-100 text-orange-800'; break;
-                                                case 'revisi': $statusClass = 'bg-yellow-100 text-yellow-800'; break;
-                                                case 'rejected': $statusClass = 'bg-red-100 text-red-800'; break;
                                                 default: $statusClass = 'bg-gray-100 text-gray-800'; break;
                                             }
                                         ?>
@@ -131,13 +144,13 @@
                                     <td class="py-4 px-6 whitespace-nowrap">
                                         
                                         <?php if($latestSubmission): ?>
-                                            <button onclick="showDetailModal('<?php echo e($task->judul_task); ?>', '<?php echo e($task->deskripsi_task); ?>', '<?php echo e($latestSubmission->status); ?>', '<?php echo e($latestSubmission->img_url); ?>')" class="font-medium text-blue-600 hover:underline mr-2">Detail</button>
+                                            <button onclick="showDetailModal('<?php echo e($task->judul_task); ?>', '<?php echo e($task->deskripsi_task); ?>', '<?php echo e(Str::title($latestSubmission->status)); ?>', '<?php echo e($latestSubmission->img_url); ?>')" class="font-medium text-blue-600 hover:underline mr-2">Detail</button>
                                         <?php else: ?>
                                             <span class="text-gray-500">No Submission</span>
                                         <?php endif; ?>
 
                                         
-                                        <?php if($status === 'pending'): ?>
+                                        <?php if(strtolower($status) === 'pending'): ?>
                                             <form action="<?php echo e(route('supervisor.task.done', $task->id_task)); ?>" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menandai tugas ini selesai?');">
                                                 <?php echo csrf_field(); ?>
                                                 <button type="submit" class="font-medium text-green-600 hover:underline">Done</button>
@@ -147,7 +160,7 @@
                                 </tr>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <tr class="bg-white border-b">
-                                    <td colspan="7" class="py-4 px-6 text-center text-gray-500">Tidak ada tugas yang tercatat dengan status pending.</td>
+                                    <td colspan="7" class="py-4 px-6 text-center text-gray-500">Tidak ada tugas yang tercatat dengan status yang diminta.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -156,7 +169,7 @@
 
                 
                 <div class="mt-8">
-                    <?php echo e($tasks->appends(request()->except('page'))->links('vendor.pagination.tailwind')); ?>
+                    <?php echo e($tasks->appends(request()->except('page', 'pekerja_id', 'task_id', 'status'))->links('vendor.pagination.tailwind')); ?>
 
                 </div>
 
@@ -165,19 +178,20 @@
     </div>
 
     
-    <div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
             <div class="mt-3 text-center">
                 <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Detail Tugas</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500 text-left"><strong>Judul:</strong> <span id="modalTaskTitle"></span></p>
-                    <p class="text-sm text-gray-500 text-left"><strong>Deskripsi:</strong> <span id="modalTaskDesc"></span></p>
-                    <p class="text-sm text-gray-500 text-left"><strong>Status:</strong> <span id="modalStatus"></span></p>
+                <div class="mt-2 px-7 py-3 text-left">
+                    <p class="text-sm text-gray-500 mb-1"><strong>Judul:</strong> <span id="modalTaskTitle"></span></p>
+                    <p class="text-sm text-gray-500 mb-1"><strong>Deskripsi:</strong> <span id="modalTaskDesc"></span></p>
+                    <p class="text-sm text-gray-500 mb-1"><strong>Status:</strong> <span id="modalStatus"></span></p>
+                    
                     <div id="modalImageContainer" class="mt-4 hidden">
-                        <p class="text-sm text-gray-500 text-left mb-2"><strong>Gambar Submission:</strong></p>
-                        <img id="modalImage" src="" alt="Submission Image" class="max-w-full h-auto rounded-md border">
+                        <p class="text-sm text-gray-500 mb-2"><strong>Gambar Submission:</strong></p>
+                        <img id="modalImage" src="" alt="Submission Image" class="max-w-full h-auto rounded-md border object-contain">
                     </div>
-                    <p id="noImageMessage" class="text-sm text-gray-500 text-left mt-2 hidden">Tidak ada gambar submission.</p>
+                    <p id="noImageMessage" class="text-sm text-gray-500 mt-2 hidden">Tidak ada gambar submission.</p>
                 </div>
                 <div class="items-center px-4 py-3">
                     <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
@@ -189,22 +203,6 @@
     </div>
 
     <script>
-        // JavaScript untuk menampilkan/menyembunyikan form "Tambah Tugas"
-        const addTaskButton = document.getElementById('addTaskButton');
-        const addTaskForm = document.getElementById('addTaskForm');
-        const cancelAddTask = document.getElementById('cancelAddTask');
-
-        if (addTaskButton && addTaskForm && cancelAddTask) {
-            addTaskButton.addEventListener('click', () => {
-                addTaskForm.classList.remove('hidden');
-                addTaskForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-
-            cancelAddTask.addEventListener('click', () => {
-                addTaskForm.classList.add('hidden');
-            });
-        }
-
         // JavaScript untuk Modal Detail
         const detailModal = document.getElementById('detailModal');
         const closeModalButton = document.getElementById('closeModalButton');
@@ -220,7 +218,7 @@
             modalTaskDesc.textContent = description;
             modalStatus.textContent = status;
 
-            if (imageUrl && imageUrl !== 'null') { // Periksa juga 'null' string jika URL-nya string "null"
+            if (imageUrl && imageUrl !== 'null' && imageUrl.trim() !== '') {
                 modalImage.src = imageUrl;
                 modalImageContainer.classList.remove('hidden');
                 noImageMessage.classList.add('hidden');
@@ -231,16 +229,19 @@
             }
 
             detailModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Mencegah scroll body saat modal aktif
         }
 
         closeModalButton.addEventListener('click', () => {
             detailModal.classList.add('hidden');
+            document.body.style.overflow = ''; // Mengembalikan scroll body
         });
 
         // Menutup modal jika klik di luar konten modal
         detailModal.addEventListener('click', (event) => {
             if (event.target === detailModal) {
                 detailModal.classList.add('hidden');
+                document.body.style.overflow = ''; // Mengembalikan scroll body
             }
         });
     </script>

@@ -18,12 +18,10 @@
         <div class="container mx-auto flex justify-between items-center">
             <a href="{{ route('supervisor.dashboard') }}" class="text-xl font-bold">Supervisor Dashboard</a>
             <div class="space-x-4 flex items-center">
-                {{-- Link-link navigasi utama --}}
                 <a href="{{ route('supervisor.dashboard') }}" class="hover:text-gray-300">Dashboard</a>
                 <a href="{{ route('supervisor.task.log') }}" class="hover:text-gray-300">Log Tugas</a>
-                <a href="#" class="hover:text-gray-300">Pekerja</a>
+                <a href="{{ route('supervisor.pekerja.list') }}" class="hover:text-gray-300">Pekerja</a> {{-- Link Pekerja ke Daftar Semua Pekerja --}}
 
-                {{-- Tombol Logout --}}
                 <form method="POST" action="{{ route('logout') }}" class="inline-block">
                     @csrf
                     <button type="submit" class="hover:text-gray-300 cursor-pointer bg-transparent border-none text-white font-bold p-0">
@@ -41,18 +39,14 @@
         <aside class="w-64 bg-white shadow-md rounded-lg p-6 ml-6 flex flex-col justify-between">
             <div>
                 <div class="mb-4 text-center">
-                    {{-- Avatar Placeholder --}}
                     <div class="w-24 h-24 mx-auto rounded-full bg-gray-200 flex items-center justify-center mb-2">
                         <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
                     </div>
-                    {{-- Nama dan Email Supervisor --}}
                     <h2 class="text-xl font-semibold text-gray-800">{{ Auth::user()->name ?? 'Supervisor' }}</h2>
                     <p class="text-gray-600 text-sm">{{ Auth::user()->email ?? 'email@example.com' }}</p>
                 </div>
-                {{-- Jika ada navigasi khusus sidebar, letakkan di sini --}}
                 <nav class="space-y-2">
-                    {{-- Contoh link di sidebar --}}
-                    {{-- <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Pengaturan Sidebar</a> --}}
+                    {{-- Navigasi Sidebar jika ada --}}
                 </nav>
             </div>
         </aside>
@@ -175,8 +169,8 @@
                                     <td class="py-4 px-6">{{ $pekerja->email }}</td>
                                     <td class="py-4 px-6">{{ $pekerja->alamat }}</td>
                                     <td class="py-4 px-6">
-                                        {{-- LINK INI MENGARAH KE LOG TUGAS DENGAN FILTER PEKERJA TERTENTU --}}
-                                        <a href="{{ route('supervisor.task.log', ['pekerja_id' => $pekerja->id_pekerja]) }}" class="font-medium text-blue-600 hover:underline">Lihat Tugas</a>
+                                        {{-- PERBAIKAN DI SINI: LINK KE HALAMAN DETAIL PEKERJA --}}
+                                        <a href="{{ route('supervisor.pekerja.detail', ['id_pekerja' => $pekerja->id_pekerja]) }}" class="font-medium text-blue-600 hover:underline">Lihat Tugas</a>
                                         {{-- Tambahkan tombol lain jika perlu (Edit, Delete Pekerja) --}}
                                     </td>
                                 </tr>
@@ -203,8 +197,8 @@
                                     $status = $latestSubmission ? $latestSubmission->status : 'to do'; 
                                     
                                     $statusClass = '';
-                                    switch ($status) {
-                                        case 'completed': $statusClass = 'bg-green-100 text-green-800'; break;
+                                    switch (strtolower($status)) {
+                                        case 'done': $statusClass = 'bg-green-100 text-green-800'; break;
                                         case 'to do': $statusClass = 'bg-gray-200 text-gray-700'; break; // 'To Do'
                                         case 'doing': $statusClass = 'bg-yellow-100 text-yellow-800'; break; // 'Doing'
                                         case 'pending': $statusClass = 'bg-orange-100 text-orange-800'; break; // 'Pending' (submission received, waiting approval)
@@ -221,9 +215,9 @@
                             <p class="text-sm text-gray-600 flex items-center">
                                 <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                 Tenggat: {{ $task->tenggat_task->format('d M Y') }}
-                                @if($task->tenggat_task->isPast() && $status !== 'completed')
+                                @if($task->tenggat_task->isPast() && strtolower($status) !== 'done') {{-- Status perbandingan juga diubah --}}
                                     <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                        KADALUARSA
+                                        MISSING
                                     </span>
                                 @endif
                             </p>

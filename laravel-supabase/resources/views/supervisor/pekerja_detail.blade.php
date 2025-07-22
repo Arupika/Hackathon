@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Tugas Supervisor</title>
+    <title>Detail Pekerja - Supervisor</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* Custom CSS jika diperlukan, tapi usahakan pakai Tailwind */
@@ -11,14 +11,13 @@
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal">
 
-    {{-- TOP NAVIGATION BAR --}}
+    {{-- TOP NAVIGATION BAR (Sama seperti Dashboard/Log Tugas) --}}
     <nav class="bg-gray-800 p-4 text-white shadow-md">
         <div class="container mx-auto flex justify-between items-center">
             <a href="{{ route('supervisor.dashboard') }}" class="text-xl font-bold">Supervisor Dashboard</a>
             <div class="space-x-4 flex items-center">
                 <a href="{{ route('supervisor.dashboard') }}" class="hover:text-gray-300">Dashboard</a>
                 <a href="{{ route('supervisor.task.log') }}" class="hover:text-gray-300">Log Tugas</a>
-                {{-- PERBAIKAN DI SINI: Link Pekerja sekarang mengarah ke daftar semua pekerja --}}
                 <a href="{{ route('supervisor.pekerja.list') }}" class="hover:text-gray-300">Pekerja</a>
 
                 <form method="POST" action="{{ route('logout') }}" class="inline-block">
@@ -50,12 +49,10 @@
             </div>
         </aside>
 
-        {{-- KONTEN UTAMA KANAN: LOG TUGAS --}}
+        {{-- KONTEN UTAMA KANAN: DETAIL PEKERJA DAN TUGAS --}}
         <main class="flex-1 p-6">
             <div class="container mx-auto p-6 bg-white rounded-lg shadow-xl">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">
-                    Log Tugas @if (isset($currentFilterText) && ($pekerjaId || $taskId || strtolower($statusFilter) !== 'pending')) - {{ $currentFilterText }} @endif
-                </h1>
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Detail Pekerja: {{ $pekerja->nama_pekerja }}</h1>
 
                 {{-- Alert Messages (dari session) --}}
                 @if (session('success'))
@@ -71,43 +68,27 @@
                     </div>
                 @endif
 
-                {{-- Filter Buttons --}}
-                <div class="flex space-x-2 mb-6">
-                    {{-- Filter button for 'pending' --}}
-                    <a href="{{ route('supervisor.task.log', array_merge(request()->except('page', 'status', 'task_id'), ['status' => 'pending'])) }}"
-                       class="px-4 py-2 rounded-md font-semibold text-sm transition duration-150 ease-in-out
-                       {{ strtolower($statusFilter) === 'pending' && !$taskId ? 'bg-orange-600 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200' }}">
-                        Pending
-                    </a>
-                    {{-- Filter button for 'Done' (Completed) --}}
-                    <a href="{{ route('supervisor.task.log', array_merge(request()->except('page', 'status', 'task_id'), ['status' => 'Done'])) }}"
-                       class="px-4 py-2 rounded-md font-semibold text-sm transition duration-150 ease-in-out
-                       {{ strtolower($statusFilter) === 'done' && !$taskId ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200' }}">
-                        Done
-                    </a>
-                    {{-- Filter button for 'Doing' --}}
-                    <a href="{{ route('supervisor.task.log', array_merge(request()->except('page', 'status', 'task_id'), ['status' => 'doing'])) }}"
-                       class="px-4 py-2 rounded-md font-semibold text-sm transition duration-150 ease-in-out
-                       {{ strtolower($statusFilter) === 'doing' && !$taskId ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' }}">
-                        Doing
-                    </a>
-                    {{-- Tombol Hapus Filter (jika ada filter aktif selain default 'pending' tanpa pekerja_id/task_id) --}}
-                    @if ($pekerjaId || $taskId || strtolower($statusFilter) !== 'pending')
-                        <a href="{{ route('supervisor.task.log') }}" class="ml-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-flex items-center">
-                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            Hapus Filter
-                        </a>
-                    @endif
+                {{-- Informasi Detail Pekerja --}}
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Informasi Pekerja</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                        <div><strong>ID Pekerja:</strong> {{ $pekerja->id_pekerja }}</div>
+                        <div><strong>Nama:</strong> {{ $pekerja->nama_pekerja }}</div>
+                        <div><strong>Nomor HP:</strong> {{ $pekerja->nomer_hp }}</div>
+                        <div><strong>Email:</strong> {{ $pekerja->email }}</div>
+                        <div class="col-span-1 md:col-span-2"><strong>Alamat:</strong> {{ $pekerja->alamat }}</div>
+                    </div>
+                    {{-- Tambahkan tombol edit/hapus pekerja di sini jika diinginkan --}}
                 </div>
 
-
-                <div class="overflow-x-auto relative shadow-md sm:rounded-lg mb-8">
+                {{-- Daftar Tugas yang Dipegang Pekerja Ini --}}
+                <div class="bg-white shadow-md rounded-lg overflow-x-auto mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2 px-6 pt-4">Tugas Pekerja Ini</h2>
                     <table class="w-full text-sm text-left text-gray-500">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
                                 <th scope="col" class="py-3 px-6">ID Tugas</th>
                                 <th scope="col" class="py-3 px-6">Judul Tugas</th>
-                                <th scope="col" class="py-3 px-6">Ditugaskan ke</th>
                                 <th scope="col" class="py-3 px-6">Deskripsi</th>
                                 <th scope="col" class="py-3 px-6">Tenggat Waktu</th>
                                 <th scope="col" class="py-3 px-6">Status</th>
@@ -119,7 +100,6 @@
                                 <tr class="bg-white border-b hover:bg-gray-50">
                                     <td class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">{{ Str::limit($task->id_task, 8, '') }}...</td>
                                     <td class="py-4 px-6">{{ $task->judul_task }}</td>
-                                    <td class="py-4 px-6">{{ $task->pekerja->nama_pekerja ?? 'N/A' }}</td>
                                     <td class="py-4 px-6">{{ Str::limit($task->deskripsi_task, 50) }}</td>
                                     <td class="py-4 px-6">{{ $task->tenggat_task->format('d M Y') }}</td>
                                     <td>
@@ -142,40 +122,33 @@
                                     </td>
                                     <td class="py-4 px-6 whitespace-nowrap">
                                         {{-- Tombol Detail (menggunakan modal untuk melihat deskripsi dan gambar) --}}
+                                        {{-- Diubah: Sekarang hanya tombol detail yang memicu modal, tanpa link terpisah untuk gambar --}}
                                         @if($latestSubmission)
-                                            <button onclick="showDetailModal('{{ $task->judul_task }}', '{{ $task->deskripsi_task }}', '{{ Str::title($latestSubmission->status) }}', '{{ $latestSubmission->img_url }}')" class="font-medium text-blue-600 hover:underline mr-2">Detail</button>
+                                            <button onclick="showDetailModal('{{ $task->judul_task }}', '{{ $task->deskripsi_task }}', '{{ Str::title($latestSubmission->status) }}', '{{ $latestSubmission->img_url }}')" class="font-medium text-blue-600 hover:underline">Lihat Detail</button>
                                         @else
                                             <span class="text-gray-500">No Submission</span>
-                                        @endif
-
-                                        {{-- Tombol Done (Hanya muncul jika status pending) --}}
-                                        @if(strtolower($status) === 'pending')
-                                            <form action="{{ route('supervisor.task.done', $task->id_task) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menandai tugas ini selesai?');">
-                                                @csrf
-                                                <button type="submit" class="font-medium text-green-600 hover:underline">Done</button>
-                                            </form>
                                         @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr class="bg-white border-b">
-                                    <td colspan="7" class="py-4 px-6 text-center text-gray-500">Tidak ada tugas yang tercatat dengan status yang diminta.</td>
+                                    <td colspan="6" class="py-4 px-6 text-center text-gray-500">Tidak ada tugas yang ditugaskan kepada pekerja ini.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                {{-- Pagination --}}
+                {{-- Pagination untuk tugas pekerja --}}
                 <div class="mt-8">
-                    {{ $tasks->appends(request()->except('page', 'pekerja_id', 'task_id', 'status'))->links('vendor.pagination.tailwind') }}
+                    {{ $tasks->links('vendor.pagination.tailwind') }}
                 </div>
 
             </div>
         </main>
     </div>
 
-    {{-- MODAL UNTUK DETAIL TUGAS/SUBMISSION --}}
+    {{-- MODAL UNTUK DETAIL TUGAS/SUBMISSION (DIKEMBALIKAN DARI task_log.blade.php) --}}
     <div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
         <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
             <div class="mt-3 text-center">
@@ -201,7 +174,7 @@
     </div>
 
     <script>
-        // JavaScript untuk Modal Detail
+        // JavaScript untuk Modal Detail (sama persis seperti di task_log.blade.php)
         const detailModal = document.getElementById('detailModal');
         const closeModalButton = document.getElementById('closeModalButton');
         const modalTaskTitle = document.getElementById('modalTaskTitle');
@@ -227,19 +200,18 @@
             }
 
             detailModal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Mencegah scroll body saat modal aktif
+            document.body.style.overflow = 'hidden';
         }
 
         closeModalButton.addEventListener('click', () => {
             detailModal.classList.add('hidden');
-            document.body.style.overflow = ''; // Mengembalikan scroll body
+            document.body.style.overflow = '';
         });
 
-        // Menutup modal jika klik di luar konten modal
         detailModal.addEventListener('click', (event) => {
             if (event.target === detailModal) {
                 detailModal.classList.add('hidden');
-                document.body.style.overflow = ''; // Mengembalikan scroll body
+                document.body.style.overflow = '';
             }
         });
     </script>
