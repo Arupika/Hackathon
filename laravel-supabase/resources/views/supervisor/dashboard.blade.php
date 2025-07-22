@@ -4,398 +4,336 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supervisor Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #333;
-        }
-        nav {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 0;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        nav a {
-            color: #fff;
-            text-decoration: none;
-            margin: 0 15px;
-            font-weight: bold;
-        }
-        .content {
-            margin-top: 20px;
-        }
-        .section-title {
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            color: #555;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-group input[type="text"],
-        .form-group input[type="date"],
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box; /* Untuk memastikan padding tidak menambah lebar */
-        }
-        .form-group textarea {
-            resize: vertical; /* Memungkinkan textarea diubah ukurannya secara vertikal */
-            min-height: 80px;
-        }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        .alert {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .error-message {
-            color: #dc3545;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        table th {
-            background-color: #f2f2f2;
-            cursor: pointer; /* Menunjukkan bisa di-sort */
-        }
-        table th a {
-            text-decoration: none;
-            color: #333;
-            display: block;
-        }
-        .pagination {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .pagination a, .pagination span {
-            display: inline-block;
-            padding: 8px 12px;
-            margin: 0 4px;
-            border: 1px solid #ddd;
-            text-decoration: none;
-            color: #007bff;
-            border-radius: 4px;
-        }
-        .pagination span.current {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        .pagination a:hover:not(.active) {
-            background-color: #f2f2f2;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .stat-card h3 {
-            margin-top: 0;
-            color: #495057;
-        }
-        .stat-card p {
-            font-size: 2em;
-            font-weight: bold;
-            color: #343a40;
-            margin-bottom: 0;
-        }
-        .chart-container {
-            width: 100%;
-            max-width: 600px; /* Atur lebar maksimum untuk grafik */
-            margin: 20px auto; /* Tengahkan grafik */
-        }
-        .chart-title {
-            text-align: center;
-            margin-bottom: 15px;
-            color: #555;
-        }
-    </style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Anda bisa menambahkan CSS kustom tambahan di sini jika benar-benar diperlukan,
+           tapi sebisa mungkin gunakan kelas Tailwind CSS. */
+    </style>
 </head>
-<body>
-    <nav>
-        <a href="{{ route('supervisor.dashboard') }}">Dashboard</a>
-        {{-- Anda bisa menambahkan link lain di sini --}}
-        <a href="#">Laporan</a>
-        <a href="#">Pekerja</a>
-        <a href="#">Logout</a>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    {{-- TOP NAVIGATION BAR --}}
+    <nav class="bg-gray-800 p-4 text-white shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{{ route('supervisor.dashboard') }}" class="text-xl font-bold">Supervisor Dashboard</a>
+            <div class="space-x-4 flex items-center">
+                {{-- Link-link navigasi utama --}}
+                <a href="{{ route('supervisor.dashboard') }}" class="hover:text-gray-300">Dashboard</a>
+                <a href="{{ route('supervisor.task.log') }}" class="hover:text-gray-300">Log Tugas</a>
+                <a href="#" class="hover:text-gray-300">Pekerja</a>
+
+                {{-- Tombol Logout --}}
+                <form method="POST" action="{{ route('logout') }}" class="inline-block">
+                    @csrf
+                    <button type="submit" class="hover:text-gray-300 cursor-pointer bg-transparent border-none text-white font-bold p-0">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
     </nav>
 
-    <div class="container">
-        <h1>Dashboard Supervisor</h1>
+    {{-- MAIN CONTENT AREA: SIDEBAR KIRI + KONTEN UTAMA KANAN --}}
+    <div class="flex min-h-[calc(100vh-64px)] mt-4">
 
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
+        {{-- SIDEBAR KIRI --}}
+        <aside class="w-64 bg-white shadow-md rounded-lg p-6 ml-6 flex flex-col justify-between">
+            <div>
+                <div class="mb-4 text-center">
+                    {{-- Avatar Placeholder --}}
+                    <div class="w-24 h-24 mx-auto rounded-full bg-gray-200 flex items-center justify-center mb-2">
+                        <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    {{-- Nama dan Email Supervisor --}}
+                    <h2 class="text-xl font-semibold text-gray-800">{{ Auth::user()->name ?? 'Supervisor' }}</h2>
+                    <p class="text-gray-600 text-sm">{{ Auth::user()->email ?? 'email@example.com' }}</p>
+                </div>
+                {{-- Jika ada navigasi khusus sidebar, letakkan di sini --}}
+                <nav class="space-y-2">
+                    {{-- Contoh link di sidebar --}}
+                    {{-- <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Pengaturan Sidebar</a> --}}
+                </nav>
             </div>
-        @endif
+        </aside>
 
-        @if (session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
+        {{-- KONTEN UTAMA KANAN --}}
+        <main class="flex-1 p-6">
+            <div class="container mx-auto p-6 bg-white rounded-lg shadow-xl">
+                {{-- ALERT MESSAGES --}}
+                @if (session('success'))
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Sukses!</strong>
+                        <span class="block sm:inline">{{ session('success') }}</span>
+                    </div>
+                @endif
 
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+                @if (session('error'))
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Error!</strong>
+                        <span class="block sm:inline">{{ session('error') }}</span>
+                    </div>
+                @endif
 
-        {{-- Statistik Penting --}}
-        <h2 class="section-title">Statistik Umum</h2>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Tugas</h3>
-                <p>{{ $totalTasks }}</p>
-            </div>
-            <div class="stat-card">
-                <h3>Tugas Selesai</h3>
-                <p>{{ $completedTasks }}</p>
-            </div>
-            <div class="stat-card">
-                <h3>Tugas Belum Selesai</h3>
-                <p>{{ $pendingTasks }}</p>
-            </div>
-        </div>
+                @if ($errors->any())
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Validasi Gagal:</strong>
+                        <ul class="mt-2 list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-        {{-- Form untuk Memberi Tugas --}}
-        <h2 class="section-title">Beri Tugas Baru</h2>
-        <form action="{{ route('supervisor.tasks.store') }}" method="POST">
-            @csrf
-            <div class="form-group">
-                <label for="id_pekerja">Pilih Pekerja:</label>
-                <select id="id_pekerja" name="id_pekerja" required>
-                    <option value="">-- Pilih Pekerja --</option>
-                    @foreach($pekerjaList as $pekerja)
-                        <option value="{{ $pekerja->id_pekerja }}" {{ old('id_pekerja') == $pekerja->id_pekerja ? 'selected' : '' }}>
-                            {{ $pekerja->nama_pekerja }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('id_pekerja')
-                    <div class="error-message">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="form-group">
-                <label for="judul_task">Judul Tugas:</label>
-                <input type="text" id="judul_task" name="judul_task" value="{{ old('judul_task') }}" required>
-                @error('judul_task')
-                    <div class="error-message">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="form-group">
-                <label for="deskripsi_task">Deskripsi:</label>
-                <textarea id="deskripsi_task" name="deskripsi_task">{{ old('deskripsi_task') }}</textarea>
-                @error('deskripsi_task')
-                    <div class="error-message">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="form-group">
-                <label for="tenggat_task">Tenggat Waktu:</label>
-                <input type="date" id="tenggat_task" name="tenggat_task" value="{{ old('tenggat_task') }}" required>
-                @error('tenggat_task')
-                    <div class="error-message">{{ $message }}</div>
-                @enderror
-            </div>
-            <button type="submit" class="btn">Tambah Tugas</button>
-        </form>
-
-        {{-- Tabel Daftar Tugas --}}
-        <h2 class="section-title" style="margin-top: 40px;">Daftar Tugas</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID Tugas</th>
-                    <th>
-                        <a href="{{ route('supervisor.dashboard', ['sort_by' => 'judul_task', 'order_by' => ($sortColumn == 'judul_task' && $sortOrder == 'asc') ? 'desc' : 'asc']) }}">
-                            Judul Tugas
-                            @if ($sortColumn == 'judul_task')
-                                @if ($sortOrder == 'asc') &uarr; @else &darr; @endif
-                            @endif
+                {{-- Header Konten Kanan (Tombol Add Task & View Log Tugas) --}}
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800">Daftar Pekerja</h1>
+                    <div class="flex space-x-4">
+                        <button id="addTaskButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                            Tambah Tugas
+                        </button>
+                        <a href="{{ route('supervisor.task.log') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-block">
+                            Lihat Log Tugas
                         </a>
-                    </th>
-                    <th>Pekerja</th>
-                    <th>Deskripsi</th>
-                    <th>
-                        <a href="{{ route('supervisor.dashboard', ['sort_by' => 'tenggat_task', 'order_by' => ($sortColumn == 'tenggat_task' && $sortOrder == 'asc') ? 'desc' : 'asc']) }}">
-                            Tenggat Waktu
-                            @if ($sortColumn == 'tenggat_task')
-                                @if ($sortOrder == 'asc') &uarr; @else &darr; @endif
-                            @endif
-                        </a>
-                    </th>
-                    {{-- Asumsi ada kolom 'status' di tabel task_pekerja atau Anda akan mengambilnya dari submission --}}
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($tasks as $task)
-                    <tr>
-                        <td>{{ $task->id_task }}</td>
-                        <td>{{ $task->judul_task }}</td>
-                        <td>{{ $task->pekerja ? $task->pekerja->nama_pekerja : 'N/A' }}</td>
-                        <td>{{ Str::limit($task->deskripsi_task, 50) }}</td>
-                        <td>{{ $task->tenggat_task->format('d M Y') }}</td>
-                        {{-- Status: Anda perlu mendapatkan status dari tabel submission atau task_pekerja --}}
-                        <td>
-                            @php
-                                // Ini adalah logika placeholder.
-                                // Anda perlu menyesuaikan ini dengan cara Anda melacak status tugas.
-                                // Misalnya, jika Anda punya relasi $task->submission dan status di sana:
-                                // $status = $task->submission->status ?? 'Belum Ada Submission';
-                                $statuses = ['Pending', 'Selesai', 'Revisi', 'Kadaluarsa'];
-                                echo $statuses[array_rand($statuses)]; // Contoh status acak
-                            @endphp
-                        </td>
-                        <td>
-                            <a href="#" class="btn btn-sm">Lihat Detail</a>
-                            {{-- Tambahkan tombol edit/hapus di sini --}}
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" style="text-align: center;">Belum ada tugas yang ditambahkan.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                    </div>
+                </div>
 
-        {{-- Pagination --}}
-        <div class="pagination">
-            {{ $tasks->appends(request()->except('page'))->links() }}
-        </div>
+                {{-- Form untuk Memberi Tugas (Awalnya Tersembunyi) --}}
+                <div id="addTaskForm" class="bg-gray-50 p-6 rounded-lg shadow-sm mb-10 {{ $errors->any() ? '' : 'hidden' }}">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Assign Tugas Baru</h2>
+                    <form action="{{ route('supervisor.tasks.store') }}" method="POST">
+                        @csrf
+                        <div class="mb-4">
+                            <label for="id_pekerja" class="block text-gray-700 text-sm font-bold mb-2">Pilih Pekerja:</label>
+                            <select id="id_pekerja" name="id_pekerja" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('id_pekerja') border-red-500 @enderror" required>
+                                <option value="">-- Pilih Pekerja --</option>
+                                @foreach($pekerjaList as $pekerja)
+                                    <option value="{{ $pekerja->id_pekerja }}" {{ old('id_pekerja') == $pekerja->id_pekerja ? 'selected' : '' }}>
+                                        {{ $pekerja->nama_pekerja }} (ID: {{ Str::limit($pekerja->id_pekerja, 8, '') }}...)
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('id_pekerja')
+                                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="judul_task" class="block text-gray-700 text-sm font-bold mb-2">Judul Tugas:</label>
+                            <input type="text" id="judul_task" name="judul_task" value="{{ old('judul_task') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('judul_task') border-red-500 @enderror" required>
+                            @error('judul_task')
+                                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="deskripsi_task" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi:</label>
+                            <textarea id="deskripsi_task" name="deskripsi_task" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24 @error('deskripsi_task') border-red-500 @enderror">{{ old('deskripsi_task') }}</textarea>
+                            @error('deskripsi_task')
+                                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-6">
+                            <label for="tenggat_task" class="block text-gray-700 text-sm font-bold mb-2">Tenggat Waktu:</label>
+                            <input type="date" id="tenggat_task" name="tenggat_task" value="{{ old('tenggat_task') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('tenggat_task') border-red-500 @enderror" required>
+                            @error('tenggat_task')
+                                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="flex items-center justify-end">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                                Assign Tugas
+                            </button>
+                            <button type="button" id="cancelAddTask" class="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-        {{-- Grafik Visualisasi Data (Placeholder) --}}
-        <h2 class="section-title" style="margin-top: 40px;">Visualisasi Data Tugas</h2>
-        <div class="chart-container">
-            <p class="chart-title">Persentase Tugas Selesai vs Belum Selesai</p>
-            <canvas id="taskStatusChart"></canvas>
-        </div>
+                {{-- Tabel Daftar Pekerja --}}
+                <div class="bg-white shadow-md rounded-lg overflow-x-auto mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2 px-6 pt-4">Daftar Pekerja</h2>
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th scope="col" class="py-3 px-6">ID Pekerja</th>
+                                <th scope="col" class="py-3 px-6">Nama Pekerja</th>
+                                <th scope="col" class="py-3 px-6">Nomor HP</th>
+                                <th scope="col" class="py-3 px-6">Email</th>
+                                <th scope="col" class="py-3 px-6">Alamat</th>
+                                <th scope="col" class="py-3 px-6">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($pekerjaList as $pekerja)
+                                <tr class="bg-white border-b hover:bg-gray-50">
+                                    <th scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
+                                        {{ Str::limit($pekerja->id_pekerja, 8, '') }}...
+                                    </th>
+                                    <td class="py-4 px-6">{{ $pekerja->nama_pekerja }}</td>
+                                    <td class="py-4 px-6">{{ $pekerja->nomer_hp }}</td>
+                                    <td class="py-4 px-6">{{ $pekerja->email }}</td>
+                                    <td class="py-4 px-6">{{ $pekerja->alamat }}</td>
+                                    <td class="py-4 px-6">
+                                        {{-- LINK INI MENGARAH KE LOG TUGAS DENGAN FILTER PEKERJA TERTENTU --}}
+                                        <a href="{{ route('supervisor.task.log', ['pekerja_id' => $pekerja->id_pekerja]) }}" class="font-medium text-blue-600 hover:underline">Lihat Tugas</a>
+                                        {{-- Tambahkan tombol lain jika perlu (Edit, Delete Pekerja) --}}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr class="bg-white border-b">
+                                    <td colspan="6" class="py-4 px-6 text-center text-gray-500">Tidak ada pekerja yang terdaftar.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
-        {{-- Notifikasi (Placeholder) --}}
-        <h2 class="section-title" style="margin-top: 40px;">Notifikasi</h2>
-        <div class="content">
-            <p>Di sini akan tampil notifikasi penting (misalnya, tugas baru, submission baru, tugas mendekati tenggat waktu, dll.).</p>
-            <ul>
-                <li>[Waktu] - [Jenis Notifikasi] - [Isi Notifikasi Singkat]</li>
-                <li>...</li>
-            </ul>
-        </div>
+                {{-- Bagian Tugas Berdasarkan Hari --}}
+                <div class="mt-8 bg-white shadow-md rounded-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Tugas Berdasarkan Hari</h2>
+                    @forelse ($upcomingTasks as $task)
+                        <div class="border-b pb-3 mb-3 last:border-b-0 last:pb-0">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="text-lg font-semibold text-gray-800">{{ $task->judul_task }}</p>
+                                @php
+                                    $latestSubmission = $task->submissions->first();
+                                    // Default status to 'to do' if no submission exists.
+                                    // Use 'status' from latest submission if available.
+                                    $status = $latestSubmission ? $latestSubmission->status : 'to do'; 
+                                    
+                                    $statusClass = '';
+                                    switch ($status) {
+                                        case 'completed': $statusClass = 'bg-green-100 text-green-800'; break;
+                                        case 'to do': $statusClass = 'bg-gray-200 text-gray-700'; break; // 'To Do'
+                                        case 'doing': $statusClass = 'bg-yellow-100 text-yellow-800'; break; // 'Doing'
+                                        case 'pending': $statusClass = 'bg-orange-100 text-orange-800'; break; // 'Pending' (submission received, waiting approval)
+                                        case 'revisi': $statusClass = 'bg-yellow-100 text-yellow-800'; break; // 'Revisi' (existing)
+                                        case 'rejected': $statusClass = 'bg-red-100 text-red-800'; break; // 'Rejected' (existing)
+                                        default: $statusClass = 'bg-gray-100 text-gray-800'; break; // Fallback
+                                    }
+                                @endphp
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $statusClass }}">
+                                    {{ Str::title($status) }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600">Untuk: {{ $task->pekerja->nama_pekerja ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-600 flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                Tenggat: {{ $task->tenggat_task->format('d M Y') }}
+                                @if($task->tenggat_task->isPast() && $status !== 'completed')
+                                    <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                        KADALUARSA
+                                    </span>
+                                @endif
+                            </p>
+                            {{-- LINK INI MENGARAH KE LOG TUGAS DENGAN ID TUGAS --}}
+                            <a href="{{ route('supervisor.task.log', ['task_id' => $task->id_task]) }}" class="text-blue-600 hover:underline text-sm mt-1 block">Lihat Detail</a>
+                        </div>
+                    @empty
+                        <p class="text-gray-600">Tidak ada tugas yang mendekati tenggat waktu atau tugas hari ini.</p>
+                    @endforelse
+                </div>
 
+                {{-- Grafik Visualisasi Data --}}
+                <div class="mt-8 bg-white shadow-md rounded-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Visualisasi Data Tugas</h2>
+                    <div class="max-w-xl mx-auto bg-gray-50 p-6 rounded-lg shadow-sm">
+                        <p class="text-center text-gray-600 font-medium mb-4">Persentase Tugas Selesai vs Belum Selesai</p>
+                        <canvas id="taskStatusChart"></canvas>
+                    </div>
+                    {{-- Tambahan: Tampilkan juga angka total, selesai, dan pending di bawah grafik --}}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-center">
+                        <div class="p-3 bg-blue-50 rounded-md">
+                            <p class="text-lg font-semibold text-blue-800">Total</p>
+                            <p class="text-2xl font-bold text-blue-900">{{ $totalTasks }}</p>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded-md">
+                            <p class="text-lg font-semibold text-green-800">Selesai</p>
+                            <p class="text-2xl font-bold text-green-900">{{ $completedTasks }}</p>
+                        </div>
+                        <div class="p-3 bg-yellow-50 rounded-md">
+                            <p class="text-lg font-semibold text-yellow-800">Belum Selesai</p>
+                            <p class="text-2xl font-bold text-yellow-900">{{ $pendingTasks }}</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
     </div>
 
     <script>
-        // Chart.js untuk Grafik
-        const ctx = document.getElementById('taskStatusChart').getContext('2d');
-        const taskStatusChart = new Chart(ctx, {
-            type: 'doughnut', // Atau 'pie'
-            data: {
-                labels: ['Selesai', 'Belum Selesai'],
-                datasets: [{
-                    label: 'Jumlah Tugas',
-                    data: [{{ $completedTasks }}, {{ $pendingTasks }}],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.8)', // Hijau untuk Selesai
-                        'rgba(255, 99, 132, 0.8)'  // Merah untuk Belum Selesai
-                    ],
-                    borderColor: [
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) {
-                                    label += ': ';
+        // JavaScript untuk menampilkan/menyembunyikan form "Tambah Tugas"
+        const addTaskButton = document.getElementById('addTaskButton');
+        const addTaskForm = document.getElementById('addTaskForm');
+        const cancelAddTask = document.getElementById('cancelAddTask');
+
+        if (addTaskButton && addTaskForm && cancelAddTask) {
+            addTaskButton.addEventListener('click', () => {
+                addTaskForm.classList.remove('hidden');
+                addTaskForm.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll ke form
+            });
+
+            cancelAddTask.addEventListener('click', () => {
+                addTaskForm.classList.add('hidden');
+            });
+        }
+
+        // Chart.js untuk Grafik (menggunakan data dari controller)
+        const ctx = document.getElementById('taskStatusChart');
+        if (ctx) {
+            const taskStatusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Selesai', 'Belum Selesai'],
+                    datasets: [{
+                        label: 'Jumlah Tugas',
+                        data: [{{ $completedTasks }}, {{ $pendingTasks }}],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.8)', // Hijau untuk Selesai
+                            'rgba(255, 99, 132, 0.8)'  // Merah untuk Belum Selesai
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                // Default warna teks legend, sesuaikan jika perlu dengan tema CSS Anda
+                                color: 'rgb(55, 65, 81)' // Contoh warna teks gray-700
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        let total = {{ $completedTasks }} + {{ $pendingTasks }};
+                                        if (total > 0) {
+                                            label += context.parsed + ' (' + ((context.parsed / total) * 100).toFixed(2) + '%)';
+                                        } else {
+                                            label += context.parsed + ' (0.00%)';
+                                        }
+                                    }
+                                    return label;
                                 }
-                                if (context.parsed !== null) {
-                                    label += context.parsed + ' (' + ((context.parsed / ({{ $completedTasks }} + {{ $pendingTasks }})) * 100).toFixed(2) + '%)';
-                                }
-                                return label;
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>

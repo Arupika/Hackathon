@@ -4,47 +4,50 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str; // Tambahkan ini untuk UUID
+// Hapus 'use Illuminate\Support\Str;'
 
 class TaskPekerja extends Model
 {
     use HasFactory;
 
-    // Nama tabel jika berbeda dari konvensi Laravel (plural, snake_case)
     protected $table = 'task_pekerja';
-
-    // Tentukan primary key dan jenisnya
     protected $primaryKey = 'id_task';
-    public $incrementing = false; // Karena menggunakan UUID
-    protected $keyType = 'string'; // Karena UUID adalah string
+    // Hapus baris ini
+    // public $incrementing = false;
+    protected $keyType = 'string'; // Tipe key adalah string (untuk id_task)
 
-    // Kolom yang bisa diisi (fillable) untuk form
+    // id_task harus masuk fillable jika Anda ingin mass assign ID manual
     protected $fillable = [
-        'id_pekerja', // Akan diisi dari dropdown pekerja
+        'id_task',
+        'id_pekerja', // Ini juga harus string
         'judul_task',
         'deskripsi_task',
         'tenggat_task',
     ];
 
-    // Casting untuk tanggal
+    // HAPUS ENTIRELY METHOD BOOT() INI
+    // protected static function boot()
+    // {
+    //     parent::boot();
+    //     static::creating(function ($model) {
+    //         if (empty($model->{$model->getKeyName()})) {
+    //             $model->{$model->getKeyName()} = (string) Str::uuid();
+    //         }
+    //     });
+    // }
+
     protected $casts = [
         'tenggat_task' => 'date',
     ];
 
-    // Boot method untuk generate UUID otomatis saat membuat data baru
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
-
-    // Relasi dengan list_pekerja (jika ada)
     public function pekerja()
     {
         return $this->belongsTo(ListPekerja::class, 'id_pekerja', 'id_pekerja');
+    }
+    // Relasi ke Submission (TAMBAHKAN INI)
+    public function submissions()
+    {
+        // Sebuah tugas bisa memiliki banyak submission, kita akan mengambil yang terbaru
+        return $this->hasMany(Submission::class, 'id_task', 'id_task')->latest();
     }
 }
