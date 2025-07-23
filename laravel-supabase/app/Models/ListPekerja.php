@@ -12,8 +12,7 @@ class ListPekerja extends Model
 
     protected $table = 'list_pekerja';
     protected $primaryKey = 'id_pekerja';
-    // Hapus baris ini karena ID tidak auto-increment tapi juga tidak digenerate UUID oleh Laravel
-    // public $incrementing = false;
+    public $incrementing = false;
     protected $keyType = 'string'; // Tipe key adalah string (PEK001)
 
     // id_pekerja harus masuk fillable jika Anda ingin mass assign ID manual

@@ -79,8 +79,8 @@
                        {{ strtolower($statusFilter) === 'pending' && !$taskId ? 'bg-orange-600 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200' }}">
                         Pending
                     </a>
-                    {{-- Filter button for 'Done' (Completed) --}}
-                    <a href="{{ route('supervisor.task.log', array_merge(request()->except('page', 'status', 'task_id'), ['status' => 'Done'])) }}"
+                    {{-- Filter button for 'Done' (Completed) - DIUBAH MENJADI 'done' lowercase --}}
+                    <a href="{{ route('supervisor.task.log', array_merge(request()->except('page', 'status', 'task_id'), ['status' => 'done'])) }}"
                        class="px-4 py-2 rounded-md font-semibold text-sm transition duration-150 ease-in-out
                        {{ strtolower($statusFilter) === 'done' && !$taskId ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200' }}">
                         Done
@@ -116,7 +116,23 @@
                         </thead>
                         <tbody>
                             @forelse($tasks as $task)
-                                <tr class="bg-white border-b hover:bg-gray-50">
+                                @php
+                                    $latestSubmission = $task->submissions->first();
+                                    $status = $latestSubmission ? $latestSubmission->status : 'to do';
+
+                                    $isOverdue = false;
+                                    // UBAH DI SINI: Konversi $status ke huruf kecil untuk perbandingan
+                                    $statusLower = strtolower($status); 
+                                    
+                                    // Periksa apakah status 'pending' ATAU 'doing' DAN tenggat waktu sudah lewat
+                                    if (($statusLower === 'pending' || $statusLower === 'doing') && $task->tenggat_task && $task->tenggat_task->isPast()) {
+                                        $isOverdue = true;
+                                    }
+
+                                    // Tentukan kelas CSS untuk baris tabel
+                                    $rowClass = $isOverdue ? 'bg-red-100 border-b hover:bg-red-50' : 'bg-white border-b hover:bg-gray-50';
+                                @endphp
+                                <tr class="{{ $rowClass }}">
                                     <td class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">{{ Str::limit($task->id_task, 8, '') }}...</td>
                                     <td class="py-4 px-6">{{ $task->judul_task }}</td>
                                     <td class="py-4 px-6">{{ $task->pekerja->nama_pekerja ?? 'N/A' }}</td>
@@ -124,10 +140,8 @@
                                     <td class="py-4 px-6">{{ $task->tenggat_task->format('d M Y') }}</td>
                                     <td>
                                         @php
-                                            $latestSubmission = $task->submissions->first();
-                                            $status = $latestSubmission ? $latestSubmission->status : 'to do';
-
                                             $statusClass = '';
+                                            // Tetap gunakan strtolower di sini untuk menampilkan status yang konsisten
                                             switch (strtolower($status)) {
                                                 case 'done': $statusClass = 'bg-green-100 text-green-800'; break;
                                                 case 'to do': $statusClass = 'bg-gray-200 text-gray-700'; break;
@@ -150,10 +164,8 @@
 
                                         {{-- Tombol Done (Hanya muncul jika status pending) --}}
                                         @if(strtolower($status) === 'pending')
-                                            <form action="{{ route('supervisor.task.done', $task->id_task) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menandai tugas ini selesai?');">
-                                                @csrf
-                                                <button type="submit" class="font-medium text-green-600 hover:underline">Done</button>
-                                            </form>
+                                            {{-- MENGGANTI CONFIRM DEFAULT DENGAN MODAL KUSTOM --}}
+                                            <button type="button" onclick="showConfirmDoneModal('{{ $task->id_task }}')" class="font-medium text-green-600 hover:underline">Done</button>
                                         @endif
                                     </td>
                                 </tr>
@@ -200,8 +212,36 @@
         </div>
     </div>
 
+    {{-- MODAL BARU UNTUK KONFIRMASI DONE --}}
+    <div id="confirmDoneModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-sm shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                    <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Konfirmasi Selesai Tugas</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">Apakah Anda yakin ingin menandai tugas ini selesai?</p>
+                </div>
+                <div class="items-center px-4 py-3 flex justify-end space-x-3">
+                    <button id="cancelDoneButton" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        Batal
+                    </button>
+                    <button id="confirmDoneButton" class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300">
+                        Ya, Selesai!
+                    </button>
+                    {{-- Form tersembunyi untuk submit aksi done --}}
+                    <form id="doneTaskForm" method="POST" action="" class="hidden">
+                        @csrf
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-        // JavaScript untuk Modal Detail
+        // JavaScript untuk Modal Detail (yang sudah ada)
         const detailModal = document.getElementById('detailModal');
         const closeModalButton = document.getElementById('closeModalButton');
         const modalTaskTitle = document.getElementById('modalTaskTitle');
@@ -235,13 +275,57 @@
             document.body.style.overflow = ''; // Mengembalikan scroll body
         });
 
-        // Menutup modal jika klik di luar konten modal
+        // Menutup modal detail jika klik di luar konten modal
         detailModal.addEventListener('click', (event) => {
             if (event.target === detailModal) {
                 detailModal.classList.add('hidden');
                 document.body.style.overflow = ''; // Mengembalikan scroll body
             }
         });
+
+
+        // ======================================================
+        // JavaScript BARU untuk MODAL KONFIRMASI "DONE"
+        // ======================================================
+        const confirmDoneModal = document.getElementById('confirmDoneModal');
+        const cancelDoneButton = document.getElementById('cancelDoneButton');
+        const confirmDoneButton = document.getElementById('confirmDoneButton');
+        const doneTaskForm = document.getElementById('doneTaskForm');
+
+        let currentTaskId = null; // Variabel untuk menyimpan ID tugas yang akan diselesaikan
+
+        function showConfirmDoneModal(taskId) {
+            currentTaskId = taskId; // Simpan ID tugas
+            // Atur action form tersembunyi dengan ID tugas yang sesuai
+            doneTaskForm.action = `/supervisor/tasks/${taskId}/done`; // Pastikan rute Anda sesuai
+            confirmDoneModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Mencegah scroll body
+        }
+
+        function hideConfirmDoneModal() {
+            confirmDoneModal.classList.add('hidden');
+            document.body.style.overflow = ''; // Mengembalikan scroll body
+            currentTaskId = null; // Reset ID tugas
+        }
+
+        // Event listener untuk tombol "Batal" pada modal konfirmasi
+        cancelDoneButton.addEventListener('click', hideConfirmDoneModal);
+
+        // Event listener untuk tombol "Ya, Selesai!" pada modal konfirmasi
+        confirmDoneButton.addEventListener('click', () => {
+            if (currentTaskId) {
+                doneTaskForm.submit(); // Submit form tersembunyi
+            }
+            hideConfirmDoneModal(); // Sembunyikan modal setelah submit (atau langsung jika tidak submit)
+        });
+
+        // Menutup modal konfirmasi jika klik di luar konten modal
+        confirmDoneModal.addEventListener('click', (event) => {
+            if (event.target === confirmDoneModal) {
+                hideConfirmDoneModal();
+            }
+        });
+
     </script>
 </body>
 </html>

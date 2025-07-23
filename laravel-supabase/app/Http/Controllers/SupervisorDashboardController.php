@@ -209,7 +209,7 @@ $newTaskId = DB::transaction(function () {
                                     ->latest('created_at')
                                     ->firstOrFail();
 
-            $submission->status = 'Done';
+            $submission->status = 'done';
             $submission->save();
 
             return redirect()->back()->with('success', 'Tugas berhasil ditandai selesai!');
@@ -243,5 +243,44 @@ $newTaskId = DB::transaction(function () {
     {
         $pekerjaList = ListPekerja::orderBy('nama_pekerja', 'asc')->paginate(10);
         return view('supervisor.pekerja_list', compact('pekerjaList'));
+    }
+    public function storePekerja(Request $request)
+    {
+        // Validasi data yang masuk dari form
+        // Validasi data yang masuk dari form
+        $request->validate([
+        'nama_pekerja' => 'required|string|max:255',
+        // --- INI BARIS YANG HARUS DIUBAH! ---
+        // Ganti 'pekerjas' menjadi 'list_pekerja' agar sesuai dengan model Anda
+        'nomer_hp' => 'required|string|max:15|unique:list_pekerja,nomer_hp',
+        'email' => 'required|string|email|max:255|unique:list_pekerja,email',
+        // --- AKHIR PERUBAHAN PENTING ---
+        'alamat' => 'required|string|max:500',
+    ]);
+
+        // Logika untuk membuat ID Pekerja yang unik (misal: PEK001, PEK002)
+        $lastPekerja = ListPekerja::orderBy('id_pekerja', 'desc')->first(); // Ambil pekerja terakhir berdasarkan ID
+        $newIdNum = 1;
+
+        if ($lastPekerja) {
+            // Ekstrak bagian angka dari ID terakhir (contoh: dari "PEK002" menjadi "002")
+            $lastIdNum = (int) Str::afterLast($lastPekerja->id_pekerja, 'PEK');
+            $newIdNum = $lastIdNum + 1; // Tingkatkan angkanya
+        }
+
+        // Format angka menjadi 3 digit dengan leading zeros (contoh: 1 -> 001, 12 -> 012)
+        $id_pekerja = 'PEK' . str_pad($newIdNum, 3, '0', STR_PAD_LEFT);
+
+        // Simpan data pekerja baru ke database
+        ListPekerja::create([
+            'id_pekerja' => $id_pekerja, // ID yang sudah di-generate otomatis
+            'nama_pekerja' => $request->nama_pekerja,
+            'nomer_hp' => $request->nomer_hp,
+            'email' => $request->email,
+            'alamat' => $request->alamat,
+        ]);
+
+        // Redirect kembali ke halaman daftar pekerja dengan pesan sukses
+        return redirect()->route('supervisor.pekerja.list')->with('success', 'Pekerja berhasil ditambahkan!');
     }
 }

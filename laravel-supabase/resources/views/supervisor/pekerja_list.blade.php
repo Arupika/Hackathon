@@ -67,6 +67,24 @@
                         <span class="block sm:inline">{{ session('error') }}</span>
                     </div>
                 @endif
+                {{-- Validasi Error dari Laravel (SEKARANG DISINI UNTUK MODAL) --}}
+                @if ($errors->any())
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Terjadi Kesalahan Saat Menambahkan Pekerja!</strong>
+                        <ul class="mt-2 list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                {{-- Tombol Tambah Pekerja (KEMBALI KE BUTTON UNTUK BUKA MODAL) --}}
+                <div class="mb-6 text-right">
+                    <button id="addPekerjaButton" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out">
+                        + Tambah Pekerja Baru
+                    </button>
+                </div>
 
                 <div class="overflow-x-auto relative shadow-md sm:rounded-lg mb-8">
                     <table class="w-full text-sm text-left text-gray-500">
@@ -113,5 +131,91 @@
             </div>
         </main>
     </div>
+
+    {{-- MODAL UNTUK FORM TAMBAH PEKERJA BARU (DIKEMBALIKAN KE SINI) --}}
+    <div id="addPekerjaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Tambah Pekerja Baru</h3>
+                <div class="mt-2 px-7 py-3 text-left">
+                    <form action="{{ route('supervisor.pekerja.store') }}" method="POST">
+                        @csrf
+                        <div class="mb-4">
+                            <label for="nama_pekerja" class="block text-gray-700 text-sm font-bold mb-2">Nama Pekerja:</label>
+                            <input type="text" id="nama_pekerja" name="nama_pekerja" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('nama_pekerja') border-red-500 @enderror" required value="{{ old('nama_pekerja') }}">
+                            @error('nama_pekerja')
+                                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="nomer_hp" class="block text-gray-700 text-sm font-bold mb-2">Nomor HP:</label>
+                            <input type="text" id="nomer_hp" name="nomer_hp" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('nomer_hp') border-red-500 @enderror" required value="{{ old('nomer_hp') }}">
+                            @error('nomer_hp')
+                                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                            <input type="email" id="email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('email') border-red-500 @enderror" required value="{{ old('email') }}">
+                            @error('email')
+                                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-6">
+                            <label for="alamat" class="block text-gray-700 text-sm font-bold mb-2">Alamat:</label>
+                            <textarea id="alamat" name="alamat" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('alamat') border-red-500 @enderror" required>{{ old('alamat') }}</textarea>
+                            @error('alamat')
+                                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="flex items-center justify-end">
+                            <button type="button" id="cancelAddPekerjaButton" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2">
+                                Batal
+                            </button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                Simpan Pekerja
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // JavaScript untuk Modal Tambah Pekerja
+        const addPekerjaModal = document.getElementById('addPekerjaModal');
+        const addPekerjaButton = document.getElementById('addPekerjaButton');
+        const cancelAddPekerjaButton = document.getElementById('cancelAddPekerjaButton');
+
+        addPekerjaButton.addEventListener('click', () => {
+            addPekerjaModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Mencegah scroll body
+        });
+
+        cancelAddPekerjaButton.addEventListener('click', () => {
+            addPekerjaModal.classList.add('hidden');
+            document.body.style.overflow = ''; // Mengembalikan scroll body
+        });
+
+        // Menutup modal jika klik di luar konten modal
+        addPekerjaModal.addEventListener('click', (event) => {
+            if (event.target === addPekerjaModal) {
+                addPekerjaModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // ======================================================================
+        // LOGIKA BARU: OTOMATIS BUKA MODAL JIKA ADA ERROR VALIDASI DARI BACKEND
+        // ======================================================================
+        @if ($errors->any())
+            window.addEventListener('DOMContentLoaded', (event) => {
+                addPekerjaModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        @endif
+    </script>
 </body>
 </html>

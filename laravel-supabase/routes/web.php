@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\SupervisorDashboardController;
+use App\Http\Controllers\SupervisorDashboardController; // Pastikan ini diimpor dengan benar
 use App\Http\Controllers\ProfileController;
 
 /*
@@ -52,6 +52,9 @@ Route::middleware(['auth'])->prefix('supervisor')->name('supervisor.')->group(fu
 
     // RUTE INI ADALAH UNTUK MENGAKSES pejerja_list.blade.php
     Route::get('/pekerja', [SupervisorDashboardController::class, 'listAllPekerja'])->name('pekerja.list');
+
+    // Rute untuk MENYIMPAN pekerja baru (Telah dipindahkan ke dalam grup supervisor)
+    Route::post('/pekerja/store', [SupervisorDashboardController::class, 'storePekerja'])->name('pekerja.store');
 });
 
 // Ini adalah rute-rute autentikasi yang disediakan oleh Laravel Breeze.
